@@ -229,8 +229,8 @@ class OpenGameBoostApp:
             
             self.root = ctk.CTk()
             self.root.title("OpenGameBoost")
-            self.root.geometry("420x650")
-            self.root.minsize(400, 600)
+            self.root.geometry("500x520")
+            self.root.minsize(480, 500)
             self.root.configure(fg_color="#0a0a12")
             
             # Set window icon (if available)
@@ -261,40 +261,40 @@ class OpenGameBoostApp:
         
         # === LOGO SECTION ===
         logo_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        logo_frame.pack(pady=(20, 30))
+        logo_frame.pack(pady=(10, 15))
         
         # Logo icon
         logo = ctk.CTkLabel(
-            logo_frame, text="⚡", font=("Segoe UI", 48),
+            logo_frame, text="⚡", font=("Segoe UI", 36),
             text_color="#00d4ff"
         )
         logo.pack()
         
         title = ctk.CTkLabel(
             logo_frame, text="OpenGameBoost",
-            font=("Segoe UI", 22, "bold"), text_color="#ffffff"
+            font=("Segoe UI", 18, "bold"), text_color="#ffffff"
         )
-        title.pack(pady=(5, 0))
+        title.pack(pady=(2, 0))
         
         subtitle = ctk.CTkLabel(
             logo_frame, text="Open Source Gaming Optimizer",
-            font=("Segoe UI", 11), text_color="#666666"
+            font=("Segoe UI", 10), text_color="#666666"
         )
         subtitle.pack()
         
         # === MAIN GAME MODE BUTTON ===
         self.game_mode_btn = ctk.CTkButton(
             main_frame,
-            text="🎮  ACTIVATE GAME MODE",
-            width=280, height=55,
-            font=("Segoe UI", 16, "bold"),
+            text="ACTIVATE GAME MODE",
+            width=260, height=45,
+            font=("Segoe UI", 14, "bold"),
             fg_color="#00d4ff",
             hover_color="#00a8cc",
             text_color="#000000",
-            corner_radius=12,
+            corner_radius=10,
             command=self._toggle_game_mode
         )
-        self.game_mode_btn.pack(pady=(10, 25))
+        self.game_mode_btn.pack(pady=(8, 15))
         
         # Status indicator
         self.status_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -312,88 +312,85 @@ class OpenGameBoostApp:
         )
         self.status_text.pack(side="left")
         
-        # === GAME MODE MODULES ===
-        modules_frame = ctk.CTkFrame(main_frame, fg_color="#12121e", corner_radius=12)
-        modules_frame.pack(fill="x", pady=(10, 15))
+        # === TWO COLUMN LAYOUT FOR TOGGLES ===
+        columns_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        columns_frame.pack(fill="x", pady=(10, 15))
+        columns_frame.grid_columnconfigure((0, 1), weight=1)
         
-        modules_title = ctk.CTkLabel(
-            modules_frame, text="GAME MODE MODULES",
-            font=("Segoe UI", 10, "bold"), text_color="#666666"
+        # --- LEFT COLUMN: GAME MODE MODULES ---
+        left_frame = ctk.CTkFrame(columns_frame, fg_color="#12121e", corner_radius=12)
+        left_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        
+        left_title = ctk.CTkLabel(
+            left_frame, text="GAME MODE",
+            font=("Segoe UI", 9, "bold"), text_color="#666666"
         )
-        modules_title.pack(anchor="w", padx=20, pady=(15, 10))
+        left_title.pack(anchor="w", padx=15, pady=(12, 8))
         
         # Toggle: Suspend Explorer
         self.suspend_explorer_var = ctk.BooleanVar(value=True)
-        self._create_toggle_row(
-            modules_frame, "Suspend Explorer",
-            "Pauses desktop shell for max performance",
+        self._create_toggle_row_compact(
+            left_frame, "Suspend Explorer",
             self.suspend_explorer_var
         )
         
         # Toggle: Suspend Browsers
         self.suspend_browsers_var = ctk.BooleanVar(value=True)
-        self._create_toggle_row(
-            modules_frame, "Suspend Browsers",
-            "Pauses Chrome, Firefox, Edge, etc.",
+        self._create_toggle_row_compact(
+            left_frame, "Suspend Browsers",
             self.suspend_browsers_var
         )
         
         # Toggle: Suspend Launchers
         self.suspend_launchers_var = ctk.BooleanVar(value=True)
-        self._create_toggle_row(
-            modules_frame, "Suspend Launchers",
-            "Pauses Steam, Epic, Battle.net, etc.",
-            self.suspend_launchers_var,
-            last=True
+        self._create_toggle_row_compact(
+            left_frame, "Suspend Launchers",
+            self.suspend_launchers_var
         )
-        
-        # === ADVANCED OPTIONS ===
-        advanced_frame = ctk.CTkFrame(main_frame, fg_color="#12121e", corner_radius=12)
-        advanced_frame.pack(fill="x", pady=(0, 15))
-        
-        advanced_title = ctk.CTkLabel(
-            advanced_frame, text="ADVANCED OPTIMIZATIONS",
-            font=("Segoe UI", 10, "bold"), text_color="#666666"
-        )
-        advanced_title.pack(anchor="w", padx=20, pady=(15, 10))
         
         # Toggle: Memory Optimization
         self.memory_opt_var = ctk.BooleanVar(value=True)
-        self._create_toggle_row(
-            advanced_frame, "Memory Optimization",
-            "Flush unused memory from processes",
-            self.memory_opt_var
+        self._create_toggle_row_compact(
+            left_frame, "Memory Optimization",
+            self.memory_opt_var,
+            last=True
         )
+        
+        # --- RIGHT COLUMN: ADVANCED ---
+        right_frame = ctk.CTkFrame(columns_frame, fg_color="#12121e", corner_radius=12)
+        right_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        
+        right_title = ctk.CTkLabel(
+            right_frame, text="ADVANCED",
+            font=("Segoe UI", 9, "bold"), text_color="#666666"
+        )
+        right_title.pack(anchor="w", padx=15, pady=(12, 8))
         
         # Toggle: Power Optimization
         self.power_opt_var = ctk.BooleanVar(value=True)
-        self._create_toggle_row(
-            advanced_frame, "High Performance Power",
-            "Switch to high performance power plan",
+        self._create_toggle_row_compact(
+            right_frame, "High Perf. Power",
             self.power_opt_var
         )
         
         # Toggle: Network Optimization
         self.network_opt_var = ctk.BooleanVar(value=False)
-        self._create_toggle_row(
-            advanced_frame, "Network Optimization",
-            "Disable Nagle's algorithm & NetBIOS",
+        self._create_toggle_row_compact(
+            right_frame, "Network Tweaks",
             self.network_opt_var
         )
         
         # Toggle: GPU & Registry Tweaks
         self.registry_opt_var = ctk.BooleanVar(value=False)
-        self._create_toggle_row(
-            advanced_frame, "GPU Priority Tweaks",
-            "Set GPU scheduling priority for games",
+        self._create_toggle_row_compact(
+            right_frame, "GPU Priority",
             self.registry_opt_var
         )
         
         # Toggle: Auto Game Detection
         self.game_detect_var = ctk.BooleanVar(value=False)
-        self._create_toggle_row(
-            advanced_frame, "Auto Game Detection",
-            "Auto-activate when games are launched",
+        self._create_toggle_row_compact(
+            right_frame, "Auto Detection",
             self.game_detect_var,
             last=True,
             command=self._toggle_game_detection
@@ -424,40 +421,30 @@ class OpenGameBoostApp:
         )
         version_label.pack()
     
-    def _create_toggle_row(self, parent, title: str, description: str, 
-                           variable: ctk.BooleanVar, last: bool = False,
-                           command: callable = None):
-        """Create a toggle row with title and description."""
+    def _create_toggle_row_compact(self, parent, title: str,
+                                    variable: ctk.BooleanVar, last: bool = False,
+                                    command: callable = None):
+        """Create a compact toggle row with just title."""
         row = ctk.CTkFrame(parent, fg_color="transparent")
-        row.pack(fill="x", padx=20, pady=(0, 15 if last else 8))
-        
-        text_frame = ctk.CTkFrame(row, fg_color="transparent")
-        text_frame.pack(side="left", fill="x", expand=True)
+        row.pack(fill="x", padx=15, pady=(0, 12 if last else 6))
         
         title_label = ctk.CTkLabel(
-            text_frame, text=title,
-            font=("Segoe UI", 12), text_color="#ffffff",
+            row, text=title,
+            font=("Segoe UI", 11), text_color="#ffffff",
             anchor="w"
         )
-        title_label.pack(anchor="w")
-        
-        desc_label = ctk.CTkLabel(
-            text_frame, text=description,
-            font=("Segoe UI", 9), text_color="#666666",
-            anchor="w"
-        )
-        desc_label.pack(anchor="w")
+        title_label.pack(side="left", fill="x", expand=True)
         
         toggle = ctk.CTkSwitch(
             row, text="", variable=variable,
-            width=44, height=22,
+            width=40, height=20,
             progress_color="#00d4ff",
             button_color="#ffffff",
             button_hover_color="#e0e0e0",
             fg_color="#333344",
             command=command
         )
-        toggle.pack(side="right", padx=(10, 0))
+        toggle.pack(side="right")
     
     def _toggle_game_detection(self):
         """Toggle auto game detection on/off."""
@@ -531,7 +518,7 @@ class OpenGameBoostApp:
         """Called when Game Mode is activated."""
         self.game_mode_active = True
         self.game_mode_btn.configure(
-            text="🛑  DEACTIVATE GAME MODE",
+            text="DEACTIVATE GAME MODE",
             fg_color="#ff4444",
             hover_color="#cc3333",
             text_color="#ffffff",
@@ -577,7 +564,7 @@ class OpenGameBoostApp:
         """Called when Game Mode is deactivated."""
         self.game_mode_active = False
         self.game_mode_btn.configure(
-            text="🎮  ACTIVATE GAME MODE",
+            text="ACTIVATE GAME MODE",
             fg_color="#00d4ff",
             hover_color="#00a8cc",
             text_color="#000000",
@@ -589,7 +576,7 @@ class OpenGameBoostApp:
     def _on_game_mode_error(self):
         """Called when an error occurs."""
         self.game_mode_btn.configure(
-            text="🎮  ACTIVATE GAME MODE",
+            text="ACTIVATE GAME MODE",
             fg_color="#00d4ff",
             hover_color="#00a8cc",
             text_color="#000000",
