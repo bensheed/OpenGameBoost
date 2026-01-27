@@ -2,6 +2,8 @@
 
 Open source gaming optimizer for Windows 10/11.
 
+![OpenGameBoost Screenshot](screenshot.png)
+
 ## Overview
 
 OpenGameBoost is a transparent, open-source alternative to closed-source gaming optimization tools. All code is visible and auditable - no hidden functionality, no telemetry, no malware concerns.
