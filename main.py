@@ -229,8 +229,8 @@ class OpenGameBoostApp:
             
             self.root = ctk.CTk()
             self.root.title("OpenGameBoost")
-            self.root.geometry("500x520")
-            self.root.minsize(480, 500)
+            self.root.geometry("520x620")
+            self.root.minsize(500, 600)
             self.root.configure(fg_color="#0a0a12")
             
             # Set window icon (if available)
@@ -331,21 +331,24 @@ class OpenGameBoostApp:
         self.suspend_explorer_var = ctk.BooleanVar(value=True)
         self._create_toggle_row_compact(
             left_frame, "Suspend Explorer",
-            self.suspend_explorer_var
+            self.suspend_explorer_var,
+            desc="Pause desktop shell"
         )
         
         # Toggle: Suspend Browsers
         self.suspend_browsers_var = ctk.BooleanVar(value=True)
         self._create_toggle_row_compact(
             left_frame, "Suspend Browsers",
-            self.suspend_browsers_var
+            self.suspend_browsers_var,
+            desc="Pause Chrome, Firefox, Edge"
         )
         
         # Toggle: Suspend Launchers
         self.suspend_launchers_var = ctk.BooleanVar(value=True)
         self._create_toggle_row_compact(
             left_frame, "Suspend Launchers",
-            self.suspend_launchers_var
+            self.suspend_launchers_var,
+            desc="Pause Steam, Epic, etc."
         )
         
         # Toggle: Memory Optimization
@@ -353,7 +356,8 @@ class OpenGameBoostApp:
         self._create_toggle_row_compact(
             left_frame, "Memory Optimization",
             self.memory_opt_var,
-            last=True
+            last=True,
+            desc="Flush unused RAM"
         )
         
         # --- RIGHT COLUMN: ADVANCED ---
@@ -370,21 +374,24 @@ class OpenGameBoostApp:
         self.power_opt_var = ctk.BooleanVar(value=True)
         self._create_toggle_row_compact(
             right_frame, "High Perf. Power",
-            self.power_opt_var
+            self.power_opt_var,
+            desc="Use performance power plan"
         )
         
         # Toggle: Network Optimization
         self.network_opt_var = ctk.BooleanVar(value=False)
         self._create_toggle_row_compact(
             right_frame, "Network Tweaks",
-            self.network_opt_var
+            self.network_opt_var,
+            desc="Disable Nagle, NetBIOS"
         )
         
         # Toggle: GPU & Registry Tweaks
         self.registry_opt_var = ctk.BooleanVar(value=False)
         self._create_toggle_row_compact(
             right_frame, "GPU Priority",
-            self.registry_opt_var
+            self.registry_opt_var,
+            desc="Set GPU scheduling priority"
         )
         
         # Toggle: Auto Game Detection
@@ -393,7 +400,8 @@ class OpenGameBoostApp:
             right_frame, "Auto Detection",
             self.game_detect_var,
             last=True,
-            command=self._toggle_game_detection
+            command=self._toggle_game_detection,
+            desc="Activate when games launch"
         )
         
         # === FOOTER ===
@@ -423,17 +431,28 @@ class OpenGameBoostApp:
     
     def _create_toggle_row_compact(self, parent, title: str,
                                     variable: ctk.BooleanVar, last: bool = False,
-                                    command: callable = None):
-        """Create a compact toggle row with just title."""
+                                    command: callable = None, desc: str = None):
+        """Create a compact toggle row with title and optional description."""
         row = ctk.CTkFrame(parent, fg_color="transparent")
-        row.pack(fill="x", padx=15, pady=(0, 12 if last else 6))
+        row.pack(fill="x", padx=15, pady=(0, 12 if last else 5))
+        
+        text_frame = ctk.CTkFrame(row, fg_color="transparent")
+        text_frame.pack(side="left", fill="x", expand=True)
         
         title_label = ctk.CTkLabel(
-            row, text=title,
+            text_frame, text=title,
             font=("Segoe UI", 11), text_color="#ffffff",
             anchor="w"
         )
-        title_label.pack(side="left", fill="x", expand=True)
+        title_label.pack(anchor="w")
+        
+        if desc:
+            desc_label = ctk.CTkLabel(
+                text_frame, text=desc,
+                font=("Segoe UI", 8), text_color="#555555",
+                anchor="w"
+            )
+            desc_label.pack(anchor="w")
         
         toggle = ctk.CTkSwitch(
             row, text="", variable=variable,
