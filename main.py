@@ -8,17 +8,23 @@ import logging
 import threading
 from typing import Optional
 
+# Ensure log directory exists
+if os.name == 'nt':
+    _log_dir = os.path.join(os.environ.get('APPDATA', '.'), 'OpenGameBoost')
+    os.makedirs(_log_dir, exist_ok=True)
+    _log_file = os.path.join(_log_dir, 'app.log')
+else:
+    _log_file = None
+
 # Set up logging
+_handlers = [logging.StreamHandler()]
+if _log_file:
+    _handlers.append(logging.FileHandler(_log_file, mode='a'))
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(
-            os.path.join(os.environ.get('APPDATA', '.'), 'OpenGameBoost', 'app.log'),
-            mode='a'
-        ) if os.name == 'nt' else logging.NullHandler()
-    ]
+    handlers=_handlers
 )
 logger = logging.getLogger(__name__)
 
