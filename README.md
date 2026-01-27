@@ -1,5 +1,7 @@
 # OpenGameBoost
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bensheed/OpenGameBoost)
+
 Open source gaming optimizer for Windows 10/11.
 
 ![OpenGameBoost Screenshot](screenshot.png)
