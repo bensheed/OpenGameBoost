@@ -8,9 +8,7 @@ Open source gaming optimizer for Windows 10/11.
 
 ## Overview
 
-OpenGameBoost is a transparent, open-source alternative to closed-source gaming optimization tools. All code is visible and auditable - no hidden functionality, no telemetry, no malware concerns.
-
-This project was inspired by the recent drama around Xilly's (@x1lly) closed-source GameMode tool, which faced malware accusations, mass reports, and a GitHub takedown despite clean VirusTotal scans and debunking by experts like vx-underground. OpenGameBoost offers a transparent, MIT-licensed alternative to promote verifiable optimizations in PC gaming.
+OpenGameBoost is a transparent, open-source alternative to closed-source gaming optimization tools inspired by the recent Xilly (@x1lly) GameMode controversy. That tool faced malware accusations and a GitHub takedown despite clean VirusTotal scans and expert debunking. OpenGameBoost prioritizes full code transparency and auditability - no hidden functionality, no telemetry, no malware concerns.
 
 ## Features
 
