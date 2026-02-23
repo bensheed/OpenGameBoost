@@ -58,9 +58,9 @@ class SuspendService:
     
     def __init__(self):
         self.enabled = True
-        self.suspend_explorer = True
-        self.suspend_browsers = True
-        self.suspend_launchers = True
+        self.should_suspend_explorer = True
+        self.should_suspend_browsers = True
+        self.should_suspend_launchers = True
         self.suspend_background = False  # Optional, off by default
         
         self._suspended_pids: Set[int] = set()
@@ -273,14 +273,14 @@ class SuspendService:
             "background_suspended": 0,
         }
         
-        if self.suspend_explorer:
+        if self.should_suspend_explorer:
             results["explorer_suspended"] = self.suspend_explorer()
         
-        if self.suspend_browsers:
+        if self.should_suspend_browsers:
             browser_results = self.suspend_browsers()
             results["browsers_suspended"] = browser_results["suspended"]
         
-        if self.suspend_launchers:
+        if self.should_suspend_launchers:
             launcher_results = self.suspend_launchers()
             results["launchers_suspended"] = launcher_results["suspended"]
         
@@ -369,9 +369,9 @@ class SuspendService:
             "suspended_count": len(self._suspended_pids) + (1 if self._explorer_pid else 0),
             "explorer_suspended": self._explorer_pid is not None,
             "settings": {
-                "suspend_explorer": self.suspend_explorer,
-                "suspend_browsers": self.suspend_browsers,
-                "suspend_launchers": self.suspend_launchers,
+                "suspend_explorer": self.should_suspend_explorer,
+                "suspend_browsers": self.should_suspend_browsers,
+                "suspend_launchers": self.should_suspend_launchers,
                 "suspend_background": self.suspend_background,
             }
         }

@@ -175,6 +175,11 @@ class OpenGameBoostApp:
         self.config = Config()
         self.game_mode_active = False
         
+        # Initialize UI label attributes (set to None, will be created if CTK is available)
+        self.mem_label = None
+        self.power_label = None
+        self.system_label = None
+        
         # Initialize services (Windows only)
         if os.name == 'nt':
             self.suspend_service = SuspendService()
@@ -501,9 +506,9 @@ class OpenGameBoostApp:
                 
                 # Configure and run suspend service from toggles
                 if self.suspend_service:
-                    self.suspend_service.suspend_explorer = self.suspend_explorer_var.get()
-                    self.suspend_service.suspend_browsers = self.suspend_browsers_var.get()
-                    self.suspend_service.suspend_launchers = self.suspend_launchers_var.get()
+                    self.suspend_service.should_suspend_explorer = self.suspend_explorer_var.get()
+                    self.suspend_service.should_suspend_browsers = self.suspend_browsers_var.get()
+                    self.suspend_service.should_suspend_launchers = self.suspend_launchers_var.get()
                     
                     result = self.suspend_service.activate_game_mode()
                     results["suspended"] = result.get("total_suspended", 0)
@@ -976,7 +981,7 @@ class OpenGameBoostApp:
         """Update the system information display."""
         try:
             # Memory info
-            if self.memory_service:
+            if self.memory_service and self.mem_label:
                 mem_info = self.memory_service.get_memory_info()
                 if "percent" in mem_info:
                     self.mem_label.configure(
@@ -984,12 +989,13 @@ class OpenGameBoostApp:
                     )
             
             # Power info
-            if self.power_service:
+            if self.power_service and self.power_label:
                 plan = self.power_service.get_current_plan_name()
                 self.power_label.configure(text=f"Power: {plan}")
                 
-                system_type = "Desktop" if self.power_service.is_desktop else "Laptop"
-                self.system_label.configure(text=f"System: {system_type}")
+                if self.system_label:
+                    system_type = "Desktop" if self.power_service.is_desktop else "Laptop"
+                    self.system_label.configure(text=f"System: {system_type}")
         except Exception as e:
             logger.error(f"Error updating system info: {e}")
     
