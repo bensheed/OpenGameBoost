@@ -145,12 +145,12 @@ class ServiceCard(ctk.CTkFrame if CTK_AVAILABLE else object):
             if self.on_optimize:
                 result = self.on_optimize()
                 if result:
-                    self.set_status("Optimized", "#00ff88")
+                    self.set_status_threadsafe("Optimized", "#00ff88")
                 else:
-                    self.set_status("Partial", "#ffaa00")
+                    self.set_status_threadsafe("Partial", "#ffaa00")
         except Exception as e:
             logger.error(f"Optimization error: {e}")
-            self.set_status("Error", "#ff4444")
+            self.set_status_threadsafe("Error", "#ff4444")
     
     def _update_status(self):
         if self.enabled:
@@ -161,9 +161,15 @@ class ServiceCard(ctk.CTkFrame if CTK_AVAILABLE else object):
             self.optimize_btn.configure(state="disabled")
     
     def set_status(self, status: str, color: str = "#00ff88"):
+        """Set status - call from main thread only."""
         if CTK_AVAILABLE:
             self.status = status
             self.status_label.configure(text=f"● {status}", text_color=color)
+    
+    def set_status_threadsafe(self, status: str, color: str = "#00ff88"):
+        """Set status from any thread - marshals to main thread."""
+        if CTK_AVAILABLE:
+            self.after(0, lambda: self.set_status(status, color))
 
 
 class OpenGameBoostApp:
@@ -961,38 +967,36 @@ class OpenGameBoostApp:
         if self.boost_btn:
             self.boost_btn.configure(text="⏳ Boosting...", state="disabled")
         
+        def update_card_status(card, status, color):
+            """Helper to update card status on main thread."""
+            if card:
+                self.root.after(0, lambda: card.set_status(status, color))
+        
         def run_boost():
             try:
                 results = []
                 if self.memory_service and self.memory_service.enabled:
-                    if self.memory_card:
-                        self.memory_card.set_status("Optimizing...", "#ffaa00")
+                    update_card_status(self.memory_card, "Optimizing...", "#ffaa00")
                     results.append(self._optimize_memory())
-                    if self.memory_card:
-                        self.memory_card.set_status("Optimized", "#00ff88")
+                    update_card_status(self.memory_card, "Optimized", "#00ff88")
                 
                 if self.network_service and self.network_service.enabled:
-                    if self.network_card:
-                        self.network_card.set_status("Optimizing...", "#ffaa00")
+                    update_card_status(self.network_card, "Optimizing...", "#ffaa00")
                     results.append(self._optimize_network())
-                    if self.network_card:
-                        self.network_card.set_status("Optimized", "#00ff88")
+                    update_card_status(self.network_card, "Optimized", "#00ff88")
                 
                 if self.power_service and self.power_service.enabled:
-                    if self.power_card:
-                        self.power_card.set_status("Optimizing...", "#ffaa00")
+                    update_card_status(self.power_card, "Optimizing...", "#ffaa00")
                     results.append(self._optimize_power())
-                    if self.power_card:
-                        self.power_card.set_status("Optimized", "#00ff88")
+                    update_card_status(self.power_card, "Optimized", "#00ff88")
                 
                 if self.registry_service and self.registry_service.enabled:
-                    if self.registry_card:
-                        self.registry_card.set_status("Optimizing...", "#ffaa00")
+                    update_card_status(self.registry_card, "Optimizing...", "#ffaa00")
                     results.append(self._optimize_registry())
-                    if self.registry_card:
-                        self.registry_card.set_status("Optimized", "#00ff88")
+                    update_card_status(self.registry_card, "Optimized", "#00ff88")
                 
-                self._set_game_mode(True)
+                # Marshal _set_game_mode to main thread
+                self.root.after(0, lambda: self._set_game_mode(True))
                 logger.info("All optimizations applied")
             finally:
                 if self.boost_btn:
@@ -1110,6 +1114,14 @@ class OpenGameBoostApp:
     
     def _on_close(self):
         """Handle application close."""
+        # Resume any suspended processes before closing
+        if self.suspend_service:
+            try:
+                self.suspend_service.deactivate_game_mode()
+                logger.info("Resumed suspended processes on app close")
+            except Exception as e:
+                logger.error(f"Failed to resume suspended processes: {e}")
+        
         if self.game_detector:
             self.game_detector.stop()
         self.config.save()
