@@ -60,6 +60,10 @@ class Config:
         self.config: Dict[str, Any] = {}
         self.load()
     
+    def _deep_copy_defaults(self) -> Dict[str, Any]:
+        """Create a deep copy of DEFAULT_CONFIG to prevent mutation."""
+        return json.loads(json.dumps(DEFAULT_CONFIG))
+    
     def load(self) -> bool:
         """Load configuration from file."""
         try:
@@ -71,13 +75,13 @@ class Config:
                 logger.info(f"Configuration loaded from {self.config_path}")
                 return True
             else:
-                self.config = DEFAULT_CONFIG.copy()
+                self.config = self._deep_copy_defaults()
                 self.save()
                 logger.info("Created default configuration")
                 return True
         except Exception as e:
             logger.error(f"Error loading configuration: {e}")
-            self.config = DEFAULT_CONFIG.copy()
+            self.config = self._deep_copy_defaults()
             return False
     
     def save(self) -> bool:
@@ -121,5 +125,5 @@ class Config:
     
     def reset_to_defaults(self):
         """Reset all configuration to defaults."""
-        self.config = DEFAULT_CONFIG.copy()
+        self.config = self._deep_copy_defaults()
         self.save()
