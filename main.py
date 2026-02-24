@@ -645,6 +645,7 @@ class OpenGameBoostApp:
     
     def _on_game_mode_error(self):
         """Called when an error occurs."""
+        self.game_mode_active = False
         self.game_mode_btn.configure(
             text="ACTIVATE GAME MODE",
             fg_color="#00d4ff",
