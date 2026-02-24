@@ -918,7 +918,7 @@ class OpenGameBoostApp:
             return False
         result = self.memory_service.optimize_memory()
         logger.info(f"Memory optimization: {result}")
-        self._update_system_info()
+        self.root.after(0, self._update_system_info)
         return result.get("status") == "completed"
     
     def _optimize_network(self) -> bool:
@@ -935,7 +935,7 @@ class OpenGameBoostApp:
             return False
         result = self.power_service.optimize_power_settings()
         logger.info(f"Power optimization: {result}")
-        self._update_system_info()
+        self.root.after(0, self._update_system_info)
         return result.get("status") == "completed"
     
     def _optimize_registry(self) -> bool:
