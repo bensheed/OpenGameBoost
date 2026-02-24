@@ -920,6 +920,18 @@ class OpenGameBoostApp:
             except Exception as e:
                 logger.error(f"Failed to resume suspended processes: {e}")
         
+        if self.game_mode_active:
+            if self.power_service:
+                try:
+                    self.power_service.restore_power_plan()
+                except Exception as e:
+                    logger.error(f"Failed to restore power plan: {e}")
+            if self.network_service:
+                try:
+                    self.network_service.restore_network()
+                except Exception as e:
+                    logger.error(f"Failed to restore network settings: {e}")
+        
         if self.game_detector:
             self.game_detector.stop()
         self.config.save()
