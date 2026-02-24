@@ -226,7 +226,7 @@ class OpenGameBoostApp:
     def _configure_services(self):
         """Configure services from saved config."""
         if self.game_detector:
-            self.game_detector.enabled = self.config.get("game_detector", "enabled", True)
+            self.game_detector.enabled = self.config.get("game_detector", "enabled", False)
             self.game_detector.auto_optimize = self.config.get("game_detector", "auto_optimize", True)
         
         if self.memory_service:
@@ -689,209 +689,6 @@ class OpenGameBoostApp:
         except Exception as e:
             logger.error(f"Failed to copy specs: {e}")
 
-    def _create_header(self):
-        """Create the header section with logo and status."""
-        header = ctk.CTkFrame(self.root, height=100, fg_color="#0f0f1a")
-        header.grid(row=0, column=0, sticky="ew", padx=0, pady=0)
-        header.grid_columnconfigure(1, weight=1)
-        
-        # Logo and title
-        logo_frame = ctk.CTkFrame(header, fg_color="transparent")
-        logo_frame.grid(row=0, column=0, padx=20, pady=15, sticky="w")
-        
-        # Logo icon (stylized)
-        logo = ctk.CTkLabel(
-            logo_frame, text="🎮", font=("Segoe UI", 36)
-        )
-        logo.pack(side="left", padx=(0, 15))
-        
-        title_frame = ctk.CTkFrame(logo_frame, fg_color="transparent")
-        title_frame.pack(side="left")
-        
-        title = ctk.CTkLabel(
-            title_frame, text="OpenGameBoost",
-            font=("Segoe UI", 24, "bold"), text_color="#ffffff"
-        )
-        title.pack(anchor="w")
-        
-        subtitle = ctk.CTkLabel(
-            title_frame, text="Open Source Gaming Optimizer",
-            font=("Segoe UI", 11), text_color="#888888"
-        )
-        subtitle.pack(anchor="w")
-        
-        # Status indicator
-        status_frame = ctk.CTkFrame(header, fg_color="transparent")
-        status_frame.grid(row=0, column=1, padx=20, pady=15, sticky="e")
-        
-        self.mode_label = ctk.CTkLabel(
-            status_frame, text="STANDBY MODE",
-            font=("Segoe UI", 12, "bold"), text_color="#666666"
-        )
-        self.mode_label.pack(side="right", padx=10)
-        
-        self.mode_indicator = ctk.CTkLabel(
-            status_frame, text="●", font=("Segoe UI", 20),
-            text_color="#666666"
-        )
-        self.mode_indicator.pack(side="right")
-    
-    def _create_main_content(self):
-        """Create the main content area with service cards."""
-        # Create scrollable frame for content
-        main_frame = ctk.CTkScrollableFrame(
-            self.root, fg_color="#0a0a14",
-            scrollbar_button_color="#333344",
-            scrollbar_button_hover_color="#444455"
-        )
-        main_frame.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-        main_frame.grid_columnconfigure((0, 1), weight=1)
-        
-        # Quick Actions Section
-        quick_section = ctk.CTkFrame(main_frame, fg_color="transparent")
-        quick_section.grid(row=0, column=0, columnspan=2, sticky="ew", padx=20, pady=(20, 10))
-        
-        section_title = ctk.CTkLabel(
-            quick_section, text="⚡ Quick Actions",
-            font=("Segoe UI", 14, "bold"), text_color="#ffffff"
-        )
-        section_title.pack(anchor="w", pady=(0, 10))
-        
-        # Quick action buttons
-        btn_frame = ctk.CTkFrame(quick_section, fg_color="transparent")
-        btn_frame.pack(fill="x")
-        
-        self.boost_btn = ctk.CTkButton(
-            btn_frame, text="🚀 BOOST NOW", width=200, height=50,
-            font=("Segoe UI", 14, "bold"), fg_color="#00d4ff",
-            hover_color="#00a8cc", text_color="#000000",
-            command=self._boost_all
-        )
-        self.boost_btn.pack(side="left", padx=(0, 10))
-        
-        restore_btn = ctk.CTkButton(
-            btn_frame, text="↩ Restore Defaults", width=150, height=50,
-            font=("Segoe UI", 12), fg_color="#333344",
-            hover_color="#444455", text_color="#ffffff",
-            command=self._restore_all
-        )
-        restore_btn.pack(side="left", padx=(0, 10))
-        
-        # Game Detection Status
-        self.game_status = ctk.CTkLabel(
-            btn_frame, text="No games detected",
-            font=("Segoe UI", 11), text_color="#666666"
-        )
-        self.game_status.pack(side="right", padx=10)
-        
-        # Services Section
-        services_title = ctk.CTkLabel(
-            main_frame, text="🔧 Optimization Services",
-            font=("Segoe UI", 14, "bold"), text_color="#ffffff"
-        )
-        services_title.grid(row=1, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
-        
-        # Service Cards
-        self.memory_card = ServiceCard(
-            main_frame, "Memory Optimizer", 
-            "Flushes unused memory from processes to free up RAM for your games.",
-            icon="💾",
-            on_toggle=lambda e: self._toggle_service("memory", e),
-            on_optimize=self._optimize_memory
-        )
-        self.memory_card.grid(row=2, column=0, sticky="nsew", padx=(20, 10), pady=10)
-        
-        self.network_card = ServiceCard(
-            main_frame, "Network Optimizer",
-            "Disables Nagle's algorithm and NetBIOS to reduce network latency.",
-            icon="🌐",
-            on_toggle=lambda e: self._toggle_service("network", e),
-            on_optimize=self._optimize_network
-        )
-        self.network_card.grid(row=2, column=1, sticky="nsew", padx=(10, 20), pady=10)
-        
-        self.power_card = ServiceCard(
-            main_frame, "Power Optimizer",
-            "Switches to High Performance power plan for maximum CPU/GPU performance.",
-            icon="⚡",
-            on_toggle=lambda e: self._toggle_service("power", e),
-            on_optimize=self._optimize_power
-        )
-        self.power_card.grid(row=3, column=0, sticky="nsew", padx=(20, 10), pady=10)
-        
-        self.registry_card = ServiceCard(
-            main_frame, "GPU & System Tweaks",
-            "Applies registry optimizations for GPU priority and gaming performance.",
-            icon="🎮",
-            on_toggle=lambda e: self._toggle_service("registry", e),
-            on_optimize=self._optimize_registry
-        )
-        self.registry_card.grid(row=3, column=1, sticky="nsew", padx=(10, 20), pady=10)
-        
-        # Game Detection Card
-        self.game_card = ServiceCard(
-            main_frame, "Game Detector",
-            "Automatically detects running games and applies optimizations.",
-            icon="🎯",
-            on_toggle=lambda e: self._toggle_service("game_detector", e),
-            on_optimize=self._scan_games
-        )
-        self.game_card.grid(row=4, column=0, columnspan=2, sticky="ew", padx=20, pady=10)
-        
-        # System Info Section
-        info_title = ctk.CTkLabel(
-            main_frame, text="📊 System Status",
-            font=("Segoe UI", 14, "bold"), text_color="#ffffff"
-        )
-        info_title.grid(row=5, column=0, columnspan=2, sticky="w", padx=20, pady=(20, 10))
-        
-        info_frame = ctk.CTkFrame(main_frame, fg_color="#1a1a2e", corner_radius=10)
-        info_frame.grid(row=6, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 20))
-        info_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        
-        # Memory info
-        self.mem_label = ctk.CTkLabel(
-            info_frame, text="Memory: --", font=("Segoe UI", 12),
-            text_color="#ffffff"
-        )
-        self.mem_label.grid(row=0, column=0, padx=20, pady=15)
-        
-        # Power info
-        self.power_label = ctk.CTkLabel(
-            info_frame, text="Power: --", font=("Segoe UI", 12),
-            text_color="#ffffff"
-        )
-        self.power_label.grid(row=0, column=1, padx=20, pady=15)
-        
-        # System type
-        self.system_label = ctk.CTkLabel(
-            info_frame, text="System: --", font=("Segoe UI", 12),
-            text_color="#ffffff"
-        )
-        self.system_label.grid(row=0, column=2, padx=20, pady=15)
-        
-        # Update system info
-        self._update_system_info()
-    
-    def _create_footer(self):
-        """Create the footer with version and links."""
-        footer = ctk.CTkFrame(self.root, height=40, fg_color="#0f0f1a")
-        footer.grid(row=2, column=0, sticky="ew")
-        
-        version_label = ctk.CTkLabel(
-            footer, text=f"v{self.VERSION} | Open Source | MIT License",
-            font=("Segoe UI", 10), text_color="#555555"
-        )
-        version_label.pack(side="left", padx=20, pady=10)
-        
-        github_btn = ctk.CTkButton(
-            footer, text="⭐ GitHub", width=80, height=25,
-            font=("Segoe UI", 10), fg_color="transparent",
-            hover_color="#333344", text_color="#00d4ff",
-            command=self._open_github
-        )
-        github_btn.pack(side="right", padx=20, pady=10)
-    
     def _toggle_service(self, service: str, enabled: bool):
         """Toggle a service on/off."""
         self.config.set(service, "enabled", enabled)
@@ -1095,8 +892,8 @@ class OpenGameBoostApp:
     
     def run(self):
         """Run the application."""
-        # Start game detector if enabled
-        if self.game_detector and self.config.get("game_detector", "enabled", True):
+        # Start game detector if enabled (default False to match UI toggle)
+        if self.game_detector and self.config.get("game_detector", "enabled", False):
             self.game_detector.start()
         
         # Update system info periodically
