@@ -106,7 +106,7 @@ class Config:
                     result[key] = value
             return result
         
-        self.config = merge_dict(DEFAULT_CONFIG, self.config)
+        self.config = merge_dict(self._deep_copy_defaults(), self.config)
     
     def get(self, section: str, key: str = None, default: Any = None) -> Any:
         """Get a configuration value."""
