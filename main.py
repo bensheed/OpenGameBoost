@@ -180,6 +180,17 @@ class OpenGameBoostApp:
         self.power_label = None
         self.system_label = None
         
+        # Initialize UI attributes from dead-code paths (set to None to prevent AttributeError)
+        self.mode_label = None
+        self.mode_indicator = None
+        self.boost_btn = None
+        self.game_status = None
+        self.memory_card = None
+        self.network_card = None
+        self.power_card = None
+        self.registry_card = None
+        self.game_card = None
+        
         # Initialize services (Windows only)
         if os.name == 'nt':
             self.suspend_service = SuspendService()
@@ -409,9 +420,38 @@ class OpenGameBoostApp:
             desc="Activate when games launch"
         )
         
+        # === SYSTEM INFO SECTION ===
+        info_frame = ctk.CTkFrame(main_frame, fg_color="#12121e", corner_radius=10)
+        info_frame.pack(fill="x", pady=(15, 10))
+        info_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        
+        # Memory info
+        self.mem_label = ctk.CTkLabel(
+            info_frame, text="Memory: --", font=("Segoe UI", 10),
+            text_color="#888888"
+        )
+        self.mem_label.grid(row=0, column=0, padx=10, pady=10)
+        
+        # Power info
+        self.power_label = ctk.CTkLabel(
+            info_frame, text="Power: --", font=("Segoe UI", 10),
+            text_color="#888888"
+        )
+        self.power_label.grid(row=0, column=1, padx=10, pady=10)
+        
+        # System type
+        self.system_label = ctk.CTkLabel(
+            info_frame, text="System: --", font=("Segoe UI", 10),
+            text_color="#888888"
+        )
+        self.system_label.grid(row=0, column=2, padx=10, pady=10)
+        
+        # Update system info
+        self._update_system_info()
+        
         # === FOOTER ===
         footer = ctk.CTkFrame(main_frame, fg_color="transparent")
-        footer.pack(side="bottom", fill="x", pady=(20, 0))
+        footer.pack(side="bottom", fill="x", pady=(10, 0))
         
         # Copy specs button
         specs_btn = ctk.CTkButton(
@@ -907,46 +947,58 @@ class OpenGameBoostApp:
         self.game_detector._check_games()
         games = self.game_detector.get_running_games()
         if games:
-            self.game_status.configure(text=f"Detected: {', '.join(games)}")
+            if self.game_status:
+                self.game_status.configure(text=f"Detected: {', '.join(games)}")
             self._set_game_mode(True)
         else:
-            self.game_status.configure(text="No games detected")
+            if self.game_status:
+                self.game_status.configure(text="No games detected")
             self._set_game_mode(False)
         return True
     
     def _boost_all(self):
         """Apply all optimizations."""
-        self.boost_btn.configure(text="⏳ Boosting...", state="disabled")
+        if self.boost_btn:
+            self.boost_btn.configure(text="⏳ Boosting...", state="disabled")
         
         def run_boost():
             try:
                 results = []
                 if self.memory_service and self.memory_service.enabled:
-                    self.memory_card.set_status("Optimizing...", "#ffaa00")
+                    if self.memory_card:
+                        self.memory_card.set_status("Optimizing...", "#ffaa00")
                     results.append(self._optimize_memory())
-                    self.memory_card.set_status("Optimized", "#00ff88")
+                    if self.memory_card:
+                        self.memory_card.set_status("Optimized", "#00ff88")
                 
                 if self.network_service and self.network_service.enabled:
-                    self.network_card.set_status("Optimizing...", "#ffaa00")
+                    if self.network_card:
+                        self.network_card.set_status("Optimizing...", "#ffaa00")
                     results.append(self._optimize_network())
-                    self.network_card.set_status("Optimized", "#00ff88")
+                    if self.network_card:
+                        self.network_card.set_status("Optimized", "#00ff88")
                 
                 if self.power_service and self.power_service.enabled:
-                    self.power_card.set_status("Optimizing...", "#ffaa00")
+                    if self.power_card:
+                        self.power_card.set_status("Optimizing...", "#ffaa00")
                     results.append(self._optimize_power())
-                    self.power_card.set_status("Optimized", "#00ff88")
+                    if self.power_card:
+                        self.power_card.set_status("Optimized", "#00ff88")
                 
                 if self.registry_service and self.registry_service.enabled:
-                    self.registry_card.set_status("Optimizing...", "#ffaa00")
+                    if self.registry_card:
+                        self.registry_card.set_status("Optimizing...", "#ffaa00")
                     results.append(self._optimize_registry())
-                    self.registry_card.set_status("Optimized", "#00ff88")
+                    if self.registry_card:
+                        self.registry_card.set_status("Optimized", "#00ff88")
                 
                 self._set_game_mode(True)
                 logger.info("All optimizations applied")
             finally:
-                self.root.after(0, lambda: self.boost_btn.configure(
-                    text="🚀 BOOST NOW", state="normal"
-                ))
+                if self.boost_btn:
+                    self.root.after(0, lambda: self.boost_btn.configure(
+                        text="🚀 BOOST NOW", state="normal"
+                    ))
         
         threading.Thread(target=run_boost, daemon=True).start()
     
@@ -963,7 +1015,8 @@ class OpenGameBoostApp:
         # Reset card statuses
         for card in [self.memory_card, self.network_card, 
                      self.power_card, self.registry_card, self.game_card]:
-            card.set_status("Ready", "#00ff88")
+            if card:
+                card.set_status("Ready", "#00ff88")
         
         logger.info("All settings restored to defaults")
     
@@ -971,11 +1024,15 @@ class OpenGameBoostApp:
         """Set the game mode indicator."""
         self.game_mode_active = active
         if active:
-            self.mode_label.configure(text="GAME MODE ACTIVE", text_color="#00ff88")
-            self.mode_indicator.configure(text_color="#00ff88")
+            if self.mode_label:
+                self.mode_label.configure(text="GAME MODE ACTIVE", text_color="#00ff88")
+            if self.mode_indicator:
+                self.mode_indicator.configure(text_color="#00ff88")
         else:
-            self.mode_label.configure(text="STANDBY MODE", text_color="#666666")
-            self.mode_indicator.configure(text_color="#666666")
+            if self.mode_label:
+                self.mode_label.configure(text="STANDBY MODE", text_color="#666666")
+            if self.mode_indicator:
+                self.mode_indicator.configure(text_color="#666666")
     
     def _update_system_info(self):
         """Update the system information display."""
@@ -1006,8 +1063,9 @@ class OpenGameBoostApp:
     
     def _handle_game_detected(self, game_name: str):
         """Handle game detection on main thread."""
-        self.game_status.configure(text=f"🎮 Playing: {game_name}")
-        if self.game_detector.auto_optimize:
+        if self.game_status:
+            self.game_status.configure(text=f"🎮 Playing: {game_name}")
+        if self.game_detector and self.game_detector.auto_optimize:
             self._boost_all()
     
     def _on_game_closed(self, game_name: str):
@@ -1019,9 +1077,11 @@ class OpenGameBoostApp:
         """Handle game closed on main thread."""
         games = self.game_detector.get_running_games() if self.game_detector else []
         if games:
-            self.game_status.configure(text=f"Detected: {', '.join(games)}")
+            if self.game_status:
+                self.game_status.configure(text=f"Detected: {', '.join(games)}")
         else:
-            self.game_status.configure(text="No games detected")
+            if self.game_status:
+                self.game_status.configure(text="No games detected")
             self._restore_all()
     
     def _open_github(self):
