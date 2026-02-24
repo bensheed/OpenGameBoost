@@ -16,7 +16,7 @@ DEFAULT_CONFIG = {
         "check_updates": True,
     },
     "game_detector": {
-        "enabled": True,
+        "enabled": False,
         "auto_optimize": True,
         "check_interval": 5,
     },
@@ -60,6 +60,10 @@ class Config:
         self.config: Dict[str, Any] = {}
         self.load()
     
+    def _deep_copy_defaults(self) -> Dict[str, Any]:
+        """Create a deep copy of DEFAULT_CONFIG to prevent mutation."""
+        return json.loads(json.dumps(DEFAULT_CONFIG))
+    
     def load(self) -> bool:
         """Load configuration from file."""
         try:
@@ -71,13 +75,13 @@ class Config:
                 logger.info(f"Configuration loaded from {self.config_path}")
                 return True
             else:
-                self.config = DEFAULT_CONFIG.copy()
+                self.config = self._deep_copy_defaults()
                 self.save()
                 logger.info("Created default configuration")
                 return True
         except Exception as e:
             logger.error(f"Error loading configuration: {e}")
-            self.config = DEFAULT_CONFIG.copy()
+            self.config = self._deep_copy_defaults()
             return False
     
     def save(self) -> bool:
@@ -102,7 +106,7 @@ class Config:
                     result[key] = value
             return result
         
-        self.config = merge_dict(DEFAULT_CONFIG, self.config)
+        self.config = merge_dict(self._deep_copy_defaults(), self.config)
     
     def get(self, section: str, key: str = None, default: Any = None) -> Any:
         """Get a configuration value."""
@@ -121,5 +125,5 @@ class Config:
     
     def reset_to_defaults(self):
         """Reset all configuration to defaults."""
-        self.config = DEFAULT_CONFIG.copy()
+        self.config = self._deep_copy_defaults()
         self.save()
