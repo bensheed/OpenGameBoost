@@ -16,7 +16,7 @@ DEFAULT_CONFIG = {
         "check_updates": True,
     },
     "game_detector": {
-        "enabled": True,
+        "enabled": False,
         "auto_optimize": True,
         "check_interval": 5,
     },
