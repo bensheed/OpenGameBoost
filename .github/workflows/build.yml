@@ -9,35 +9,56 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write  # required to publish releases
+
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
-    
-    - name: Create version info
-      run: python build.py
-      continue-on-error: true
-    
+
     - name: Build executable
+      run: python build.py
+
+    - name: Verify executable was produced
+      shell: pwsh
       run: |
-        pyinstaller --clean OpenGameBoost.spec
-    
+        if (-not (Test-Path "dist/OpenGameBoost.exe")) {
+          Write-Error "dist/OpenGameBoost.exe was not produced"
+          exit 1
+        }
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: OpenGameBoost-Windows
         path: dist/OpenGameBoost.exe
         retention-days: 30
+
+    - name: Publish rolling release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: latest
+        name: Latest build
+        prerelease: true
+        files: dist/OpenGameBoost.exe
+
+    - name: Publish versioned release
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/OpenGameBoost.exe
