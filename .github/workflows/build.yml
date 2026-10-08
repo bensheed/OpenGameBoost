@@ -9,32 +9,44 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Serialize runs per ref: a newer push cancels stale in-flight runs so the
+# rolling 'latest' release can never be overwritten by an older commit's build.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read  # least privilege; only the release job escalates to write
+
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pyinstaller
-    
-    - name: Create version info
-      run: python build.py
-      continue-on-error: true
-    
+
     - name: Build executable
+      run: python build.py
+
+    - name: Verify executable was produced
+      shell: pwsh
       run: |
-        pyinstaller --clean OpenGameBoost.spec
-    
+        if (-not (Test-Path "dist/OpenGameBoost.exe")) {
+          Write-Error "dist/OpenGameBoost.exe was not produced"
+          exit 1
+        }
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -45,17 +57,32 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    # Pushes, plus manual runs dispatched against a v* tag (e.g. retrying a
+    # failed tag release). Never on pull_request — the write token is never
+    # exposed to PR builds.
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v'))
     permissions:
       contents: write
-    
+
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
         name: OpenGameBoost-Windows
-    
+
+    - name: Publish rolling release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: latest
+        name: Latest build
+        prerelease: true
+        files: OpenGameBoost.exe
+
     - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
         files: OpenGameBoost.exe
