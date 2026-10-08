@@ -9,8 +9,14 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Serialize runs per ref: a newer push cancels stale in-flight runs so the
+# rolling 'latest' release can never be overwritten by an older commit's build.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
-  contents: write  # required to publish releases
+  contents: read  # least privilege; only the release job escalates to write
 
 jobs:
   build:
@@ -48,19 +54,12 @@ jobs:
         path: dist/OpenGameBoost.exe
         retention-days: 30
 
-    - name: Publish rolling release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: latest
-        name: Latest build
-        prerelease: true
-        files: dist/OpenGameBoost.exe
-
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    # Pushes only — never on pull_request, so the write token is never
+    # exposed to PR builds.
+    if: github.event_name == 'push'
     permissions:
       contents: write
 
@@ -70,7 +69,17 @@ jobs:
       with:
         name: OpenGameBoost-Windows
 
+    - name: Publish rolling release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: latest
+        name: Latest build
+        prerelease: true
+        files: OpenGameBoost.exe
+
     - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
         files: OpenGameBoost.exe
