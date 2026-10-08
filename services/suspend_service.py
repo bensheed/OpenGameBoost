@@ -61,7 +61,7 @@ class SuspendService:
         self.should_suspend_explorer = True
         self.should_suspend_browsers = True
         self.should_suspend_launchers = True
-        self.suspend_background = False  # Optional, off by default
+        self.should_suspend_background = False  # Optional, off by default
         
         self._suspended_pids: Set[int] = set()
         self._explorer_pid: Optional[int] = None
@@ -284,7 +284,7 @@ class SuspendService:
             launcher_results = self.suspend_launchers()
             results["launchers_suspended"] = launcher_results["suspended"]
         
-        if self.suspend_background:
+        if self.should_suspend_background:
             bg_results = self.suspend_background_apps()
             results["background_suspended"] = bg_results["suspended"]
         
@@ -372,6 +372,6 @@ class SuspendService:
                 "suspend_explorer": self.should_suspend_explorer,
                 "suspend_browsers": self.should_suspend_browsers,
                 "suspend_launchers": self.should_suspend_launchers,
-                "suspend_background": self.suspend_background,
+                "suspend_background": self.should_suspend_background,
             }
         }
