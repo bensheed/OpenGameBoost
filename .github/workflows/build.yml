@@ -57,8 +57,23 @@ jobs:
         prerelease: true
         files: dist/OpenGameBoost.exe
 
-    - name: Publish versioned release
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: OpenGameBoost-Windows
+
+    - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/OpenGameBoost.exe
+        files: OpenGameBoost.exe
+        draft: false
+        prerelease: false
+        token: ${{ secrets.GITHUB_TOKEN }}
